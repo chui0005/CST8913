@@ -60,7 +60,7 @@ These laws require robust identity controls, network isolation, encryption, audi
 Together, these drivers make a Zero Trust Azure Landing Zone mandatory for CloudMed’s cloud strategy, ensuring security, compliance, scalability, and operational resilience for healthcare workloads.
 
 
-## Governance and Identity
+## 2. Governance and Identity
 
 To support a secure, compliant, and well-organized Azure environment, CloudMed Solutions adopts a governance and identity model that follows Zero Trust principles from the foundation upward. This section outlines how CloudMed structures its management groups, enforces policies, and secures identity through Azure Entra ID and Conditional Access.
 
