@@ -169,3 +169,110 @@ Used for communication between Azure services, removing the need for hard-coded 
 Users and services receive only the minimum permissions necessary to perform their tasks.
 
 With Entra ID at the center, CloudMed ensures explicit verification for every access request and reduces the attack surface dramatically.
+
+
+## 3. Network Architecture
+
+
+![CloudMed Network Architecture.png](CloudMed%20Network%20Architecture.png)
+
+
+CloudMed’s network architecture follows a modern Hub-and-Spoke topology designed to support Zero Trust requirements for workload isolation, secure connectivity, and centralized security governance. This model ensures that all traffic is inspected, controlled, and logged, while preventing unnecessary lateral movement between workloads.
+
+### Hub-and-Spoke Design and Zero Trust Alignment
+
+CloudMed deploys a centralized Hub Virtual Network that provides shared security and connectivity services. Individual workloads—such as the App Tier, API Tier, and Database Tier are deployed into separate Spoke Virtual Networks. This structure supports Zero Trust by enforcing strict segmentation and requiring all traffic to be explicitly authorized and inspected.
+
+Key ways this design reflects Zero Trust principles:
+
+#### Verify Explicitly:
+Traffic flowing between spokes does not route directly. All cross-workload communication is inspected by the hub firewall and follows defined security rules.
+
+#### Least Privilege Network Access:
+Workloads can only connect to the resources they are explicitly allowed to reach. For example, the App Tier cannot directly reach the Data Tier without going through approved API endpoints.
+
+
+This model scales well with CloudMed’s global footprint, allowing multiple regional hubs while preserving consistent governance.
+
+### Hub Components
+
+The Hub VNet contains all shared security, management, and connectivity services. These services operate as the control plane for CloudMed’s cloud network.
+
+Hub Components Include:
+
+#### Azure Firewall 
+- Acts as the primary security inspection point
+- Enforces inbound, outbound, and east–west traffic filtering
+- Supports TLS inspection for healthcare data protection requirements
+
+#### Azure Bastion
+- Provides secure, browser-based RDP/SSH access to resources
+- Eliminates public IP exposure on virtual machines
+- Private DNS Zones
+- Used to resolve private endpoints for PaaS services (e.g., SQL, Storage, Key Vault)
+- Ensures all PaaS traffic stays within Microsoft’s private network
+
+#### Azure Monitor / Log Analytics Workspace
+- Centralized logging for firewall, traffic flows, NSGs, VMs, and platform logs
+- Required for auditability under HIPAA, GDPR, and PIPEDA
+
+
+By keeping these services in the hub, CloudMed ensures uniform visibility and enforcement across every spoke network.
+
+### Workload Isolation in Spokes (App, API, Data)
+
+Each workload tier in MedConnect is deployed into its own Spoke VNet, ensuring strict isolation between application layers:
+
+#### App Spoke
+- Hosts front-end web and mobile application components
+- Public access is routed through Azure Front Door or Application Gateway
+- No direct connectivity to Data Spoke
+
+#### API Spoke
+- Hosts backend microservices accessed by the App Tier
+- Only exposes private API endpoints
+- Connects to the Data Spoke through allowed service paths
+
+#### Data Spoke
+- Contains data services such as Azure SQL, Storage Accounts, and analytics workloads
+- Accessible only via private endpoints
+
+All subnets are locked down with strict NSG and Firewall policies
+
+This layered design prevents the App Tier from interacting directly with the Data Tier, enforcing strong separation of duties at the network level.
+
+### Subnet Separation and East–West Traffic Control
+
+CloudMed applies further segmentation inside each spoke by separating resources into multiple subnets.
+
+#### App Spoke
+- Subnet: app-web
+- Subnet: app-services
+
+#### API Spoke
+- Subnet: api-core
+- Subnet: api-functions
+
+#### Data Spoke
+- Subnet: sql-private-endpoints
+- Subnet: storage-private-endpoints
+
+
+### East–West Traffic Policies:
+
+Communication between spokes does not occur directly. All east–west traffic flows through Azure Firewall in the hub.
+
+Hub Firewall policies specify exactly:
+- Which subnets can talk to which services
+- Which ports are allowed
+- Which protocols are required
+
+This ensures CloudMed can inspect and control all workload-to-workload communication, meeting Zero Trust’s “Assume Breach” requirement.
+
+### Private Endpoints and Secure PaaS Access
+
+CloudMed uses Private Endpoints to securely connect workloads to PaaS services (SQL, Storage, Key Vault, Event Grid, etc.). This ensures:
+- No public internet exposure
+- All data stays inside Azure’s private backbone
+- Policies can enforce that only private endpoints are allowed for sensitive services
+
