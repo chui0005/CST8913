@@ -276,3 +276,54 @@ CloudMed uses Private Endpoints to securely connect workloads to PaaS services (
 - All data stays inside Azure’s private backbone
 - Policies can enforce that only private endpoints are allowed for sensitive services
 
+
+## 4. Zero Trust Controls
+
+### Verify Explicitly
+
+CloudMed ensures that every access request, whether from a user, device, service, or workload, is authenticated and authorized before granting access to cloud resources. Verification is based on identity, device state, location, and risk scoring.
+
+#### Key Controls:
+
+- Azure Entra ID authentication for all users and workloads
+  - All cloud services authenticate through Entra ID, ensuring centralized identity governance.
+
+- Multi-Factor Authentication (MFA) enforcement
+  - Mandatory for all privileged roles and for any access to production-tier workloads.
+
+- Conditional Access Policies
+  - Access decisions consider user location, device compliance, and sign-in risk.
+
+
+### Least Privilege Access
+
+Least privilege ensures that users and services receive the minimum access required to perform their responsibilities. This approach reduces the risk of accidental or malicious misuse of permissions across CloudMed’s global infrastructure.
+
+#### Key Controls:
+
+- Role-Based Access Control (RBAC) applied at the smallest necessary scope
+
+
+### Assume Breach
+
+CloudMed designs its network and workloads assuming that intrusions can occur. Controls focus on containing attacks, preventing lateral movement, and ensuring full visibility for threat detection and incident response.
+
+#### Key Controls:
+
+- Hub-and-Spoke network with strict segmentation
+
+- App, API, and Data tiers run in isolated spokes
+
+- No direct spoke-to-spoke connectivity
+
+- Encryption of data at rest and in transit
+
+
+
+### Design Examples
+
+1) Azure Bastion for secure admin access. This eliminates the need for public IPs on VMs and enforces authenticated, logged RDP/SSH.
+
+2) Azure Private Link for Azure SQL and Storage. This ensures all PHI remains on the private Azure backbone with no public exposure.
+
+3) Azure Policy denying public IP creation in Production. This prevents accidental creation of internet-exposed workloads.
